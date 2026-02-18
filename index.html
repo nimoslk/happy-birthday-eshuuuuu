@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday Eshara</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; background: #020617; overflow: hidden; width: 100vw; position: fixed; }
+        body { display: flex; justify-content: center; align-items: center; font-family: 'Segoe UI', Roboto, sans-serif; color: white; touch-action: manipulation; }
+        
+        @keyframes rotateBorder { 100% { transform: rotate(360deg); } }
+        @keyframes revealText {
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+        @keyframes textPulse {
+            0%, 100% { transform: scale(1); color: #f8fafc; }
+            50% { transform: scale(1.05); color: #fbbf24; text-shadow: 0 0 15px rgba(251, 191, 36, 0.6); }
+        }
+        @keyframes blowEmoji { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(10px); } }
+        @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} }
+
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #0f172a 0%, #020617 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; text-align: center; cursor: pointer; }
+        .gift-box { font-size: 4rem; animation: bounce 2s infinite; }
+        .welcome-msg { font-size: 1.8rem; font-weight: bold; margin: 15px 0; animation: revealText 1s ease-out forwards; }
+        .btn-start { padding: 15px 40px; font-size: 1.1rem; background: #e11d48; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; }
+
+        .main-container { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%; }
+        #instruction { font-family: 'MySinhalaFont';
+    src: url('fonts/sinhala-font.woff2') format('woff2'); 1.5rem; font-weight: 1000; margin-bottom: 30px; line-height: 1.5; padding: 0 20px; animation: textPulse 2s ease-in-out infinite; }
+        #instruction span { display: inline-block; animation: blowEmoji 1.5s ease-in-out infinite; }
+
+        .cake-area { position: relative; display: flex; flex-direction: column; align-items: center; animation: floating 3s ease-in-out infinite; }
+        .cake { width: 180px; height: 80px; background: #4e342e; border-radius: 15px 15px 0 0; position: relative; border-top: 6px solid #6d4c41; }
+        .cake-base { width: 220px; height: 12px; background: #fdf2f2; border-radius: 10px; }
+        .candles { position: absolute; top: -24px; width: 100%; display: flex; justify-content: center; flex-wrap: wrap; }
+        .candle { width: 5px; height: 24px; background: #f472b6; margin: 2px; position: relative; border-radius: 2px; }
+        .flame { position: absolute; width: 8px; height: 12px; background: #fbbf24; border-radius: 50%; top: -12px; left: -1.5px; box-shadow: 0 0 12px #fbbf24; transition: opacity 0.2s ease-out; }
+        .flame.off { opacity: 0; visibility: hidden; }
+
+        .card-wrapper { position: relative; width: 85%; max-width: 340px; padding: 3px; background: linear-gradient(0deg, transparent, #fbbf24, #fbbf24, transparent); border-radius: 30px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .card-wrapper::before { content: ''; position: absolute; width: 150%; height: 150%; background: conic-gradient(#fbbf24, #e11d48, #fbbf24, #3b82f6, #fbbf24); animation: rotateBorder 4s linear infinite; }
+        #birthday-card { position: relative; background: #0f172a; width: 100%; padding: 30px 20px; border-radius: 28px; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+        .profile-pic { width: 110px; height: 110px; border-radius: 50%; border: 3px solid #fbbf24; margin-bottom: 15px; object-fit: cover; animation: revealText 0.8s ease-out both; }
+        .card-h2 { opacity: 0; animation: revealText 0.8s ease-out 0.4s forwards; }
+        .name { color: #fbbf24; font-size: 2.2rem; font-weight: bold; margin: 5px 0; opacity: 0; animation: revealText 0.8s ease-out 0.8s forwards; }
+        .wish { font-size: 0.95rem; line-height: 1.5; color: #cbd5e1; margin-bottom: 15px; opacity: 0; animation: revealText 0.8s ease-out 1.2s forwards; }
+        .card-emoji { opacity: 0; animation: revealText 0.8s ease-out 1.6s forwards; }
+
+        .hidden { display: none !important; }
+        .fade-out { opacity: 0; transform: scale(0.95); transition: 0.8s ease; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <audio id="birthday-song" loop muted playsinline>
+        <source src="SaveTik.io_7587009872601058581.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="overlay" onclick="startExperience()">
+        <div class="gift-box">🎁</div>
+        <div class="welcome-msg">Hello, Eshara💙!</div>
+        <button class="btn-start">Open</button>
+    </div>
+
+    <div class="main-container" id="main">
+        <h1 id="instruction">ඉටි පන්දම් නිවන්න <span>💨</span>
+                          <br> හයියෙන් පිබින්න!</h1> 
+      <br><br>
+        <div class="cake-area" id="cakeArea">
+            <div class="cake"><div class="candles" id="candleGroup"></div></div>
+            <div class="cake-base"></div>
+        </div>
+
+        <div class="card-wrapper hidden" id="cardWrapper">
+            <div id="birthday-card">
+                <img src="https://github.com/nimoslk/happy-birthday-eshara/blob/main/IMG_0894.PNG" alt="Eshara" class="profile-pic">
+                <h2 class="card-h2">Happy 20th Birthday</h2>
+                <span class="name">Eshara!</span>
+                <p class="wish">"Forget the mistakes of the past and learn from them. Just believe in yourself and keep shining, girl!"</p>
+                <div class="card-emoji" style="font-size: 1.5rem;">💙 ✨ 🎂</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isReadyToBlow = false;
+        let blowCount = 0;
+        let canProcessBlow = true;
+        const song = document.getElementById('birthday-song');
+
+        function startExperience() {
+            // පළමු ක්ලික් කිරීමේදී සින්දුව ප්ලේ කර සද්දය නැති කරයි (Unlock Autoplay)
+            song.muted = true;
+            song.play().then(() => {
+                console.log("Audio unlocked successfully");
+            }).catch(e => console.log("Audio prep error:", e));
+
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            document.getElementById('overlay').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('main').style.display = 'flex';
+                
+                const group = document.getElementById('candleGroup');
+                for(let i=0; i<20; i++) {
+                    let c = document.createElement('div');
+                    c.className = 'candle';
+                    let f = document.createElement('div');
+                    let g = (i < 7) ? 0 : (i < 14) ? 1 : 2;
+                    f.className = 'flame group-' + g;
+                    c.appendChild(f);
+                    group.appendChild(c);
+                }
+                setTimeout(() => { isReadyToBlow = true; setupMic(); }, 500);
+            }, 800);
+        }
+
+        async function setupMic() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const analyzer = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyzer);
+                analyzer.fftSize = 256;
+                const dataArray = new Uint8Array(analyzer.frequencyBinCount);
+
+                function detect() {
+                    if (!isReadyToBlow) return;
+                    analyzer.getByteFrequencyData(dataArray);
+                    let avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    if (avg > 38 && canProcessBlow) { extinguishPartially(); }
+                    requestAnimationFrame(detect);
+                }
+                detect();
+            } catch (err) { 
+                alert("මයික් Access දීලා ඉටි පන්දම් නිවන්න! 🎤"); 
+            }
+        }
+
+        function extinguishPartially() {
+            canProcessBlow = false; 
+            const flames = document.querySelectorAll('.flame.group-' + blowCount);
+            flames.forEach(f => f.classList.add('off'));
+            blowCount++;
+
+            if (blowCount >= 3) {
+                isReadyToBlow = false;
+                
+                // ඉටිපන්දම් නිවුණු පසු සින්දුව Unmute කර ශබ්දය වැඩි කරයි
+                song.muted = false;
+                song.volume = 1.0;
+                song.currentTime = 0; 
+                song.play();
+
+                setTimeout(() => {
+                    document.getElementById('cakeArea').classList.add('fade-out');
+                    document.getElementById('instruction').classList.add('fade-out');
+                    setTimeout(() => {
+                        document.getElementById('cakeArea').style.display = 'none';
+                        document.getElementById('instruction').style.display = 'none';
+                        document.getElementById('cardWrapper').classList.remove('hidden');
+                        runConfetti();
+                    }, 500);
+                }, 400);
+            } else {
+                setTimeout(() => { canProcessBlow = true; }, 700); 
+            }
+        }
+
+        function runConfetti() {
+            const end = Date.now() + 2500;
+            (function frame() {
+                confetti({ particleCount: 5, spread: 80, origin: { y: 0.6 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+    </script>
+</body>
+</html>
